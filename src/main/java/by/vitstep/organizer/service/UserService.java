@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
     UserRepository userRepository;
-
     UserMapper userMapper;
     ProjectConfiguration projectConfiguration;
 
@@ -31,7 +30,9 @@ public class UserService {
         return userMapper.toDto(userToSave);
     }
     public UserDto getUser(Long id){
-        return userMapper.toDto(userRepository.findById(id).orElseThrow(()-> new UserNotFoundException(id)));
+        return userMapper.toDto(userRepository
+                .findById(id)
+                .orElseThrow(()-> new UserNotFoundException(id)));
 
 
     }

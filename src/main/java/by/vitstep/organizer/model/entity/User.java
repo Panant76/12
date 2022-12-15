@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -19,6 +20,8 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    UUID uuid;
     @Column(unique = true)
     String login;
     String password;

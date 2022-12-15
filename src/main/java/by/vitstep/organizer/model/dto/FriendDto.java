@@ -1,12 +1,7 @@
 package by.vitstep.organizer.model.dto;
 
-import by.vitstep.organizer.model.entity.Contacts;
-import by.vitstep.organizer.model.entity.User;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
 
 
@@ -14,10 +9,10 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class FriendDto {
     Long id;
     String name;
-    Contacts contacts;
     LocalDate birthday;
-    User user;
+
 }

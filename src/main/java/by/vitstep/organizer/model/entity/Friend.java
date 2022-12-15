@@ -6,16 +6,16 @@ import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Data
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Friend {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
+    UUID uuid;
     String name;
     @OneToOne
     Contacts contacts;
