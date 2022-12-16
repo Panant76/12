@@ -12,6 +12,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -21,6 +22,7 @@ public class AccountService {
     AccountMapper accountMapper;
     UserRepository userRepository;
 
+    @Transactional
     public AccountDto createAccount(AccountDto accountDto) {
         Account accountToSave = accountMapper.toEntity(accountDto);
         accountToSave.setUser(userRepository.findById(1L).orElseThrow(() -> new UserNotFoundException(1L)));
@@ -39,18 +41,23 @@ public class AccountService {
                         .orElseThrow(() -> new AccountNotFoundException(id)));
     }
 
+    @Transactional
     public AccountDto updateAccount(Long id, String name) {
-        return accountMapper
-                .toDto(accountRepository
-                        .findById(id)
-                        .map((acName) -> {
-                            acName.setName(name);
-                            return acName;
-                        })
-                        .orElseThrow(() -> new AccountNotFoundException(id)));
+        return accountRepository
+                .findById(id)
+                .map((acName) -> {
+                    acName.setName(name);
+                    return accountRepository.save(acName);
+                })
+                .map(accountMapper::toDto)
+                .orElseThrow(() -> new AccountNotFoundException(id));
     }
 
+    @Transactional
     public void deleteAccount(Long id) {
+        if (!accountRepository.existsById(id)) {
+            throw new AccountNotFoundException(id);
+        }
         accountRepository.deleteById(id);
 
     }
