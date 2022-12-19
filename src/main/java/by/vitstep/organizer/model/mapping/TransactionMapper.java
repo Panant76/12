@@ -4,7 +4,6 @@ import by.vitstep.organizer.model.dto.TxDto;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-
 import javax.transaction.Transaction;
 
 @Mapper(componentModel = "spring",injectionStrategy = InjectionStrategy.CONSTRUCTOR,imports = FriendMapper.class)
