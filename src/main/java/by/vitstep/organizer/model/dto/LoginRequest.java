@@ -6,26 +6,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDateTime;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TxDto {
-
-    Long id;
-
-
-    Long sourceAccountId;
-    Long targetAccountId;
-
-    String sourceAccountName;
-    String targetAccountName;
-
-    Float ammount;
-
-    LocalDateTime dateTime;
-
-    FriendDto friend;
+public class LoginRequest {
+    String login;
+    String password;
 }

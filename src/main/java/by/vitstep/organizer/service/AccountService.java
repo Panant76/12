@@ -2,15 +2,16 @@ package by.vitstep.organizer.service;
 
 import by.vitstep.organizer.exception.AccountAlreadyExistException;
 import by.vitstep.organizer.exception.AccountNotFoundException;
-import by.vitstep.organizer.exception.UserNotFoundException;
 import by.vitstep.organizer.model.dto.AccountDto;
 import by.vitstep.organizer.model.entity.Account;
+import by.vitstep.organizer.model.entity.User;
 import by.vitstep.organizer.model.mapping.AccountMapper;
 import by.vitstep.organizer.repository.AccountRepository;
 import by.vitstep.organizer.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +26,7 @@ public class AccountService {
     @Transactional
     public AccountDto createAccount(AccountDto accountDto) {
         Account accountToSave = accountMapper.toEntity(accountDto);
-        accountToSave.setUser(userRepository.findById(1L).orElseThrow(() -> new UserNotFoundException(1L)));
+        accountToSave.setUser((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         try {
             accountRepository.save(accountToSave);
         } catch (Exception ex) {

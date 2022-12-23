@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,7 +21,7 @@ public class AccountController {
     public ResponseEntity<AccountDto> createAccount(@RequestBody AccountDto accountDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(accountService.createAccount(accountDto));
     }
-
+@PreAuthorize(value = "hasRole('ADMIN')")
     @GetMapping("/get")
 public ResponseEntity<AccountDto> getAccountById(@RequestParam Long id){
         return ResponseEntity.ok(accountService.getAccountById(id));

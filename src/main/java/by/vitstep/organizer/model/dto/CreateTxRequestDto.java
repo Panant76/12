@@ -1,6 +1,5 @@
 package by.vitstep.organizer.model.dto;
 
-import by.vitstep.organizer.model.entity.enums.TransactionType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -17,5 +16,5 @@ public class CreateTxRequestDto {
 
     Float amount;
 
-    TransactionType type;
+
 }

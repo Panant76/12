@@ -6,16 +6,19 @@ import by.vitstep.organizer.model.dto.TxDto;
 import by.vitstep.organizer.model.entity.Account;
 import by.vitstep.organizer.model.entity.Friend;
 import by.vitstep.organizer.model.entity.Transaction;
+import by.vitstep.organizer.model.entity.User;
 import by.vitstep.organizer.model.mapping.TransactionMapper;
 import by.vitstep.organizer.repository.AccountRepository;
 import by.vitstep.organizer.repository.FriendRepository;
 import by.vitstep.organizer.repository.TransactionRepository;
+import by.vitstep.organizer.utils.SecurityUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -36,54 +39,18 @@ public class TransactionService {
 
     @Transactional
     public TxDto doTransact(CreateTxRequestDto request) {
-        if (request.getType() == null) {
-            throw new UnsupportedTransactionException("Не заполнен тип транзакции");
-        }
         if (request.getAmount() == null) {
             throw new BadRequestException("Не указана сумма транзакции");
+
         }
-        switch (request.getType()) {
-            case INCOME:
-                return doIncomeTx(request);
-            case OUTCOME:
-                return doOutcomeTx(request);
-            case TRANSFER:
-                return doTransferTx(request);
-        }
-        return null;
-
-    }
-
-    private TxDto doIncomeTx(CreateTxRequestDto request) {
-        final Friend friend = getFriend(request.getFriendId());
-        return Optional.ofNullable(request.getTargetAccountId())
-                .flatMap(accountRepository::findById)
-                .map(account -> {
-                    account.setAmount(account.getAmount() + request.getAmount());
-                    accountRepository.save(account);
-                    return mapper.toDto(createTransaction(request, friend, account));
-                })
-                .orElseThrow(() -> new AccountNotFoundException(request.getTargetAccountId()));
-    }
-
-    private TxDto doOutcomeTx(CreateTxRequestDto request) {
-        final Friend friend = getFriend(request.getFriendId());
-        final Account account = Optional.ofNullable(request.getSourceAccountId())
-                .flatMap(accountRepository::findById)
-                .orElseThrow(() -> new AccountNotFoundException(request.getSourceAccountId()));
-        return Optional.of(account)
-                .filter(acc -> acc.getAmount() >= request.getAmount())
-                .map(acc -> {
-                    acc.setAmount(acc.getAmount() - request.getAmount());
-                    accountRepository.save(acc);
-                    return mapper.toDto(createTransaction(request, friend, acc));
-                })
-                .orElseThrow(() -> new NotEnoughFoundException(account.getName()));
+        return doTransferTx(request);
     }
 
     private TxDto doTransferTx(CreateTxRequestDto request) {
+        User currentUser = SecurityUtil.getCurrentUser()
+                .orElseThrow(()->new UserNotFoundException("ПОльзователь не найден"));
         Account sourceAccount = Optional.ofNullable(request.getSourceAccountId())
-                .flatMap(id -> accountRepository.findById(request.getSourceAccountId()))
+                .flatMap(id -> accountRepository.findByIdAndUser(request.getSourceAccountId(), currentUser))
                 .orElseThrow(() -> new AccountNotFoundException(request.getSourceAccountId()));
         Account targetAccount = Optional.ofNullable(request.getTargetAccountId())
                 .flatMap(id -> accountRepository.findById(request.getTargetAccountId()))
@@ -91,22 +58,26 @@ public class TransactionService {
         return Optional.of(sourceAccount)
                 .filter(acc -> acc.getAmount() >= request.getAmount())
                 .map(account -> {
-                    account.setAmount(account.getAmount()- request.getAmount());
-                    targetAccount.setAmount(targetAccount.getAmount()+ request.getAmount());
+                    account.setAmount(account.getAmount() - request.getAmount());
+                    targetAccount.setAmount(targetAccount.getAmount() + request.getAmount());
                     accountRepository.save(account);
                     accountRepository.save(targetAccount);
-                    return mapper.toDto(createTransaction(request,null,account,targetAccount));
+                    return Optional.ofNullable(request.getFriendId())
+                            .flatMap(friendRepository::findById)
+                            .map(friend -> mapper.toDto(createTransaction(request, friend, sourceAccount, targetAccount)))
+                            .orElseGet(() -> mapper.toDto(createTransaction(request, null, sourceAccount, targetAccount)));
                 })
-                .orElseThrow(()-> new NotEnoughFoundException(sourceAccount.getName()));
+                .orElseThrow(() -> new NotEnoughFoundException(sourceAccount.getName()));
 
     }
 
-    private Transaction createTransaction(CreateTxRequestDto request, Friend friend, Account account) {
+    private Transaction createTransaction(CreateTxRequestDto request, Friend friend, Account sourseAccount, Account targetAccount) {
         return transactionRepository.save(Transaction
                 .builder()
-                .transactionType(request.getType())
                 .amount(request.getAmount())
-                .account(account)
+                .sourceAccount(sourseAccount)
+                .targetAccount(targetAccount)
+                .dateTime(LocalDateTime.now())
                 .friend(friend)
                 .build());
 
