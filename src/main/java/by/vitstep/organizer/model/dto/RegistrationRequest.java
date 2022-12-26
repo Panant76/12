@@ -19,7 +19,7 @@ public class RegistrationRequest {
     String login;
     String password;
     String name;
-    LocalDate birthDay;
+    LocalDate birthday;
     @JsonIgnore
     List<Roles> roles;
 }

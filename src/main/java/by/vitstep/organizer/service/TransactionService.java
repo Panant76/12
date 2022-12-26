@@ -48,7 +48,7 @@ public class TransactionService {
 
     private TxDto doTransferTx(CreateTxRequestDto request) {
         User currentUser = SecurityUtil.getCurrentUser()
-                .orElseThrow(()->new UserNotFoundException("ПОльзователь не найден"));
+                .orElseThrow(()->new UserNotFoundException("Пользователь не найден"));
         Account sourceAccount = Optional.ofNullable(request.getSourceAccountId())
                 .flatMap(id -> accountRepository.findByIdAndUser(request.getSourceAccountId(), currentUser))
                 .orElseThrow(() -> new AccountNotFoundException(request.getSourceAccountId()));

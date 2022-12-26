@@ -29,14 +29,14 @@ import java.util.List;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class AuthorizationController {
+public class  AuthorizationController {
     UserService service;
     UserMapper mapper;
     JwtUtil util;
     PasswordEncoder encoder;
     AuthenticationManager manager;
 
-    @PostMapping("/register")
+    @PostMapping("/registr")
     public ResponseEntity<UserDto> registr(@RequestBody RegistrationRequest request) {
         request.setPassword(encoder.encode(request.getPassword()));
         request.setRoles(List.of(Roles.USER));

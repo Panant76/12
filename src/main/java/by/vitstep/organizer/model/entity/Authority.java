@@ -7,7 +7,7 @@ import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
-
+// Класс присвоения юзеру роли ADMIN или USER
 @Entity
 @Data
 @Builder
