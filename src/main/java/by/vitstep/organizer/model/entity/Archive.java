@@ -1,26 +1,24 @@
 package by.vitstep.organizer.model.entity;
 
-
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.UUID;
 
-@Data
-@Builder
 @Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Friend {
+public class Archive {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    Long id;
-    UUID uuid;
-    String name;
-    @OneToOne
-    Contacts contacts;
-    LocalDate birthday;
-    @ManyToOne
-    User user;
+    Long Id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    Account account;
+    Float incom;
+    Float spend;
+    LocalDate from;
+    LocalDate to;
 }

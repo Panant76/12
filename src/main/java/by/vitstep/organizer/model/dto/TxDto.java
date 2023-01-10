@@ -15,15 +15,11 @@ import java.time.LocalDateTime;
 public class TxDto {
 
     Long id;
-
-
     Long sourceAccountId;
     Long targetAccountId;
-
     String sourceAccountName;
     String targetAccountName;
-
-    Float ammount;
+    Float amount;
 
     LocalDateTime dateTime;
 

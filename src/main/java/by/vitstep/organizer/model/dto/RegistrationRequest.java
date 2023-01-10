@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class RegistrationRequest {
     String password;
     String name;
     LocalDate birthday;
+
     @JsonIgnore
     List<Roles> roles;
 }

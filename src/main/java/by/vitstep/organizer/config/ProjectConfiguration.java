@@ -11,6 +11,7 @@ public class ProjectConfiguration {
     private String FormatDate;
     private String FormatDateTime;
     private Security security;
+    private Business business;
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
@@ -18,4 +19,11 @@ public class ProjectConfiguration {
         private String secretKey;
         private Integer tokenLifetimeHours;
     }
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Business{
+        private Integer archivationPeriodDays;
+    }
+
 }

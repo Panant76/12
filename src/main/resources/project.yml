@@ -1,6 +1,8 @@
 project:
- format-date: ${JAVA_DATE_FORMAT:dd-MM-yyyy}
+ format-date: ${JAVA_DATE_FORMAT:dd.MM.yyyy}
  format-date-time: dd.MM.yyyy HH:mm:ss
  security:
   secret-key: the_very_secret_that_nobody_can_gues
   token_lifetime_hours: 1
+ business:
+  archivation_period_days: 90

@@ -18,7 +18,9 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Optional;
 
 @Service
@@ -29,6 +31,7 @@ public class TransactionService {
     TransactionRepository transactionRepository;
     FriendRepository friendRepository;
     AccountRepository accountRepository;
+    CurrencyExchangeService exchangeService;
 
     public TxDto getTx(final Long id) {
 
@@ -48,13 +51,23 @@ public class TransactionService {
 
     private TxDto doTransferTx(CreateTxRequestDto request) {
         User currentUser = SecurityUtil.getCurrentUser()
-                .orElseThrow(()->new UserNotFoundException("Пользователь не найден"));
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
         Account sourceAccount = Optional.ofNullable(request.getSourceAccountId())
                 .flatMap(id -> accountRepository.findByIdAndUser(request.getSourceAccountId(), currentUser))
                 .orElseThrow(() -> new AccountNotFoundException(request.getSourceAccountId()));
         Account targetAccount = Optional.ofNullable(request.getTargetAccountId())
                 .flatMap(id -> accountRepository.findById(request.getTargetAccountId()))
                 .orElseThrow(() -> new AccountNotFoundException(request.getTargetAccountId()));
+        if (sourceAccount.getCurrency() == targetAccount.getCurrency()) {
+            return txAndSave(sourceAccount, targetAccount, request);
+        } else if (request.getIsAutoConverted()) {
+            request.setAmount(exchangeService.exchange(request.getAmount(), sourceAccount.getCurrency(), targetAccount.getCurrency()));
+            return txAndSave(sourceAccount, targetAccount, request);
+        } else throw new TransactionException("Валюты счетов не совпадают");
+
+    }
+
+    private TxDto txAndSave(Account sourceAccount, Account targetAccount, CreateTxRequestDto request) {
         return Optional.of(sourceAccount)
                 .filter(acc -> acc.getAmount() >= request.getAmount())
                 .map(account -> {
@@ -62,20 +75,17 @@ public class TransactionService {
                     targetAccount.setAmount(targetAccount.getAmount() + request.getAmount());
                     accountRepository.save(account);
                     accountRepository.save(targetAccount);
-                    return Optional.ofNullable(request.getFriendId())
-                            .flatMap(friendRepository::findById)
-                            .map(friend -> mapper.toDto(createTransaction(request, friend, sourceAccount, targetAccount)))
-                            .orElseGet(() -> mapper.toDto(createTransaction(request, null, sourceAccount, targetAccount)));
+
+                    return mapper.toDto(createTransaction(request, getFriend(targetAccount), sourceAccount, targetAccount));
                 })
                 .orElseThrow(() -> new NotEnoughFoundException(sourceAccount.getName()));
-
     }
 
-    private Transaction createTransaction(CreateTxRequestDto request, Friend friend, Account sourseAccount, Account targetAccount) {
+    private Transaction createTransaction(CreateTxRequestDto request, Friend friend, Account sourceAccount, Account targetAccount) {
         return transactionRepository.save(Transaction
                 .builder()
                 .amount(request.getAmount())
-                .sourceAccount(sourseAccount)
+                .sourceAccount(sourceAccount)
                 .targetAccount(targetAccount)
                 .dateTime(LocalDateTime.now())
                 .friend(friend)
@@ -83,10 +93,25 @@ public class TransactionService {
 
     }
 
-    private Friend getFriend(Long id) {
-        return Optional.ofNullable(id)
-                .flatMap(friendRepository::findById)
-                .orElseThrow(() -> new FriendNotFoundException("Не верный идентификатор друга"));
+    private Friend getFriend(Account targetAccount) {
+        return Optional.ofNullable(targetAccount.getUser())
+                .flatMap(user -> {
+                    if (SecurityUtil.getCurrentUser()
+                            .map(User::getId)
+                            .stream()
+                            .anyMatch(id -> id.equals(user.getId()))) {
+                        User self = SecurityUtil.getCurrentUser().get();
+                        return Optional.of(friendRepository.findByUuidAndUser(user.getUuid(), self)
+                                .orElseGet(() -> friendRepository.save(Friend.builder()
+                                        .uuid(self.getUuid())
+                                        .birthday(self.getBirthday())
+                                        .contacts(self.getContacts())
+                                        .user(self)
+                                        .build())));
+                    }
+                    return friendRepository.findByUuidAndUser(user.getUuid(), SecurityUtil.getCurrentUser().get());
+                })
+                .orElse(null);
     }
 
 

@@ -34,7 +34,7 @@ public class User implements UserDetails {
     LocalDate birthday;
     @ManyToMany(mappedBy = "user")
     List<Friend> friendList;
-    @OneToMany(mappedBy = "authority",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "orgUser",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     List<Authority> authorities;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

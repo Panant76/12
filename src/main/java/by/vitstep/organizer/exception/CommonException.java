@@ -1,4 +1,4 @@
-package by.vitstep.organizer.model.dto;
+package by.vitstep.organizer.exception;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

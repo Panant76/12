@@ -1,10 +1,6 @@
 package by.vitstep.organizer.aspect;
 
-import by.vitstep.organizer.exception.AccountAlreadyExistException;
-import by.vitstep.organizer.exception.AccountNotFoundException;
-import by.vitstep.organizer.exception.UserAlreadyExistException;
-import by.vitstep.organizer.exception.UserNotFoundException;
-import by.vitstep.organizer.model.dto.CommonException;
+import by.vitstep.organizer.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -21,7 +17,7 @@ public class ExceptionHandlingAdvice {
                 .message(ex.getMessage())
                 .build();
     }
-    @ExceptionHandler(value={UserAlreadyExistException.class, AccountAlreadyExistException.class})
+    @ExceptionHandler(value={UserAlreadyExistException.class, AccountAlreadyExistException.class, TransactionException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public CommonException handleBadRequest(Throwable ex){
         return CommonException

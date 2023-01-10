@@ -4,6 +4,7 @@ import by.vitstep.organizer.model.entity.enums.Roles;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
@@ -12,6 +13,7 @@ import javax.persistence.*;
 @Data
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class Authority implements GrantedAuthority {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -19,6 +21,7 @@ public class Authority implements GrantedAuthority {
     @Enumerated(value = EnumType.STRING)
     private Roles authority;
     @ManyToOne
+    @JoinColumn(name = "org_user")
     private User user;
 
     @Override

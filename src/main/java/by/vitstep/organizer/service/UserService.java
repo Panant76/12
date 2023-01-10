@@ -50,8 +50,8 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByLogin(username)
+    public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
+        return userRepository.findByLogin(userName)
                 .orElseThrow(()->new UsernameNotFoundException("Не верное имя пользователя или пароль"));
     }
     public Optional<User> getById(final Long id){

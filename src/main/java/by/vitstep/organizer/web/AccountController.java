@@ -21,7 +21,7 @@ public class AccountController {
     public ResponseEntity<AccountDto> createAccount(@RequestBody AccountDto accountDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(accountService.createAccount(accountDto));
     }
-@PreAuthorize(value = "hasRole('ADMIN')")
+//@PreAuthorize(value = "hasRole('ADMIN')")
     @GetMapping("/get")
 public ResponseEntity<AccountDto> getAccountById(@RequestParam Long id){
         return ResponseEntity.ok(accountService.getAccountById(id));
