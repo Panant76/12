@@ -3,9 +3,7 @@ package by.vitstep.organizer.service;
 import by.vitstep.organizer.config.ProjectConfiguration;
 import by.vitstep.organizer.model.entity.Archive;
 import by.vitstep.organizer.model.entity.Transaction;
-import by.vitstep.organizer.repository.AccountRepository;
-import by.vitstep.organizer.repository.ArchiveRepository;
-import by.vitstep.organizer.repository.TransactionRepository;
+import by.vitstep.organizer.repository.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -23,6 +21,8 @@ public class ArchivationService {
     AccountRepository accountRepository;
     ArchiveRepository archiveRepository;
     ProjectConfiguration projectConfiguration;
+    UserRepository userRepository;
+
     public void archivate(){
         LocalDateTime before=LocalDateTime.now().minusDays(projectConfiguration.getBusiness().getArchivationPeriodDays());
         accountRepository.findAll()
@@ -35,7 +35,8 @@ public class ArchivationService {
                             .map(Transaction::getAmount)
                             .reduce(Float::sum)
                             .orElse(0F);
-                    Float incomeAmount=value.stream()
+                    Float incomeAmount=value
+                            .stream()
                             .filter(tx->tx.getTargetAccount().getId().equals(key.getId()))
                             .map(Transaction::getAmount)
                             .reduce(Float::sum)
@@ -46,5 +47,12 @@ public class ArchivationService {
                             .incom(incomeAmount)
                             .build());
                 });
+    }
+    public void setUserUuid(){
+        userRepository.findAll()
+                .stream()
+                .collect(Collectors.toMap(us-> us.getContacts().getPhone(),us->us))
+                .forEach((key,value);
+
     }
 }

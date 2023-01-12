@@ -11,6 +11,6 @@ import java.util.List;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
-    @Query("select * from Transaction where sourceAccount = :account or targetAccount =:account and dateTime<:before")
+    @Query("select * from Transaction where (sourceAccount = :account or targetAccount =:account) and dateTime<:before")
     List<Transaction> findByAccount(final Account account, final LocalDateTime before);
 }
