@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
+
 // Класс присвоения юзеру роли ADMIN или USER
 @Entity
 @Data
@@ -21,7 +22,6 @@ public class Authority implements GrantedAuthority {
     @Enumerated(value = EnumType.STRING)
     private Roles authority;
     @ManyToOne
-    @JoinColumn(name = "org_user")
     private User user;
 
     @Override

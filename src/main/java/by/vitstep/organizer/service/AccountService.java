@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class AccountService {
     AccountRepository accountRepository;
     AccountMapper accountMapper;
-    UserRepository userRepository;
 
     @Transactional
     public AccountDto createAccount(AccountDto accountDto) {

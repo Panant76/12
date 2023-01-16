@@ -8,6 +8,7 @@ import java.time.LocalDate;
 
 @Entity
 @Builder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -19,6 +20,6 @@ public class Archive {
     Account account;
     Float incom;
     Float spend;
-    LocalDate from;
-    LocalDate to;
+    LocalDate dateFrom;
+    LocalDate dateTo;
 }
