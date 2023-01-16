@@ -1,5 +1,6 @@
 package by.vitstep.organizer.web;
 
+import by.vitstep.organizer.model.dto.ContactsDto;
 import by.vitstep.organizer.model.entity.Contacts;
 import by.vitstep.organizer.service.ContactService;
 import lombok.AccessLevel;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class ContactController {
     ContactService contactService;
 @PostMapping("/createUserContact")
-    public ResponseEntity<Contacts> createUserContact(@RequestParam Long userId, @RequestBody Contacts contacts) {
+    public ResponseEntity<Long> create(@RequestParam Long userId, @RequestBody ContactsDto contacts) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(contactService.createUserContact(userId,contacts));

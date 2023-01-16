@@ -48,11 +48,11 @@ public class ArchivationService {
                             .build());
                 });
     }
-    public void setUserUuid(){
-        userRepository.findAll()
-                .stream()
-                .collect(Collectors.toMap(us-> us.getContacts().getPhone(),us->us))
-                .forEach((key,value);
+//    public void setUserUuid(){
+//        userRepository.findAll()
+//                .stream()
+//                .collect(Collectors.toMap(us-> us.getContacts().getPhone(),us->us))
+//                .forEach((key,value);
 
-    }
+   // }
 }
