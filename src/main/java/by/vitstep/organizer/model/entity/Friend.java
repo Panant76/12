@@ -10,6 +10,8 @@ import java.util.UUID;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Friend {
@@ -18,7 +20,7 @@ public class Friend {
     Long id;
     UUID uuid;
     String name;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     Contacts contacts;
     LocalDate birthday;
     @ManyToOne

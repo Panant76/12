@@ -3,9 +3,11 @@ package by.vitstep.organizer.model.entity;
 import by.vitstep.organizer.model.entity.enums.Currency;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
 import javax.persistence.*;
+
 @Data
-@FieldDefaults(level= AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,7 +21,7 @@ public class Account {
     Float amount;
     @Enumerated(value = EnumType.STRING)
     Currency currency;
-    @JoinColumn(name = "user_id")
+
     @ManyToOne
     User user;
 }

@@ -17,9 +17,15 @@ import org.springframework.web.bind.annotation.*;
 public class ContactController {
     ContactService contactService;
 @PostMapping("/createUserContact")
-    public ResponseEntity<Contacts> create(@RequestParam Long userId, @RequestBody Contacts contacts) {
+    public ResponseEntity<Contacts> createUserContact(@RequestParam Long userId, @RequestBody Contacts contacts) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(contactService.createUserContact(userId,contacts));
+    }
+    @PostMapping("/createFriendContact")
+    public ResponseEntity<Contacts> createFriendContact(@RequestParam Long friendId, @RequestBody Contacts contacts) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(contactService.createFriendContact(friendId,contacts));
     }
 }

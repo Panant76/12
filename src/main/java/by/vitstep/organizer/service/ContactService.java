@@ -34,8 +34,7 @@ public class ContactService {
         return friendRepository
                 .findById(friendId)
                 .map(friend -> {
-                    friend
-                            .setContacts(contacts);
+                    friend.setContacts(contacts);
                     return friendRepository.save(friend);
                 })
                 .map(Friend::getContacts)
@@ -44,6 +43,6 @@ public class ContactService {
     }
 
     public Contacts getUserContacts(Long userId, Contacts contacts) {
-return null;
+        return null;
     }
 }

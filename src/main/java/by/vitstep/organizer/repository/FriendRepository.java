@@ -11,10 +11,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface FriendRepository extends JpaRepository<Friend, Long> {
+public interface FriendRepository extends JpaRepository<Friend,Long> {
 
-    Optional<Friend> findByUuidAndUser(final UUID uuid, final User user);
-
-    @Query("select * from Friend where uuid=null")
-    List<Friend> createUuidFriendAndUser();
+    Optional<Friend> findByUuidAndUser(final UUID uuid,final User user);
+  //  @Query("select * from Friend where uuid=null")
+   // List<Friend> findUuidIsNull();
 }
