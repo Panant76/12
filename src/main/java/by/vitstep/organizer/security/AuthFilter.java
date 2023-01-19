@@ -24,7 +24,7 @@ import java.util.List;
 
 
 @Component
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class AuthFilter extends OncePerRequestFilter {
     JwtUtil jwtUtil;

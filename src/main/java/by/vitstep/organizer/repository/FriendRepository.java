@@ -15,6 +15,6 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
 
     Optional<Friend> findByUuidAndUser(final UUID uuid, final User user);
 
-    @Query("select * from Friend where uuid=null")
-    List<Friend> createUuidFriendAndUser();
+//    @Query("select * from Friend where uuid=null")
+//    List<Friend> createUuidFriendAndUser();
 }

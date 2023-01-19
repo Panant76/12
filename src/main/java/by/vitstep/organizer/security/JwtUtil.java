@@ -70,7 +70,7 @@ public class JwtUtil {
                 .requireSubject("organizer")
                 .setSigningKey(key)
                 .build()
-                .parseClaimsJwt(token)
+                .parseClaimsJws(token)
                 .getBody();
     }
 
