@@ -1,13 +1,17 @@
 package by.vitstep.organizer.security;
 
 
+import by.vitstep.organizer.exception.CommonException;
 import by.vitstep.organizer.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -19,8 +23,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
-
 
 
 @Component
@@ -29,6 +33,7 @@ import java.util.List;
 public class AuthFilter extends OncePerRequestFilter {
     JwtUtil jwtUtil;
     UserService userService;
+    ObjectMapper mapper;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -38,20 +43,35 @@ public class AuthFilter extends OncePerRequestFilter {
             return;
         }
         final String token = authHeader.split(" ")[1];
-        final Claims claims = jwtUtil.validateAndGet(token);
-        Long id = Long.parseLong((String) claims.get("userId"));
-        if (id == null) {
+        try {
+            final Claims claims = jwtUtil.validateAndGet(token);
+            Long id = Long.parseLong((String) claims.get("userId"));
+            Date expiration = claims.getExpiration();
+            if (id == null) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+            userService.getById(id)
+                    .ifPresentOrElse(user -> {
+                                if (expiration.getTime() - new Date().getTime() < 60000) {
+                                    String updatedToken = jwtUtil.generateToken(user);
+                                    response.setHeader("Authorization", updatedToken);
+                                }
+                                SecurityContextHolder
+                                        .getContext()
+                                        .setAuthentication(new UsernamePasswordAuthenticationToken(user, null, CollectionUtils.isEmpty(user.getAuthorities()) ? List.of() :
+                                                user.getAuthorities()));
+                            },
+                            () -> SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(null, null, List.of())));
             filterChain.doFilter(request, response);
-            return;
+        } catch (ExpiredJwtException ex) {
+            CommonException errorResponse = CommonException
+                    .builder()
+                    .code(HttpStatus.FORBIDDEN.value())
+                    .message("Токен истек")
+                    .build();
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(mapper.writeValueAsString(errorResponse));
         }
-        userService.getById(id)
-                .ifPresentOrElse(user -> SecurityContextHolder
-                                .getContext()
-                                .setAuthentication(new UsernamePasswordAuthenticationToken(user, null, CollectionUtils.isEmpty(user.getAuthorities()) ? List.of() :
-                                        user.getAuthorities())),
-                        () -> SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(null, null, List.of())));
-        filterChain.doFilter(request, response);
-
     }
 }
-

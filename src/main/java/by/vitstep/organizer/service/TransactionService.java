@@ -1,6 +1,7 @@
 package by.vitstep.organizer.service;
 
 import by.vitstep.organizer.exception.*;
+import by.vitstep.organizer.model.dto.BillDto;
 import by.vitstep.organizer.model.dto.CreateTxRequestDto;
 import by.vitstep.organizer.model.dto.TxDto;
 import by.vitstep.organizer.model.entity.Account;
@@ -17,12 +18,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
-import java.time.LocalDate;
+import javax.validation.Valid;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Optional;
 
+@Validated
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -41,11 +43,7 @@ public class TransactionService {
     }
 
     @Transactional
-    public TxDto doTransact(CreateTxRequestDto request) {
-        if (request.getAmount() == null) {
-            throw new BadRequestException("Не указана сумма транзакции");
-
-        }
+    public TxDto doTransact(@Valid CreateTxRequestDto request) {
         return doTransferTx(request);
     }
 
@@ -114,5 +112,23 @@ public class TransactionService {
                 .orElse(null);
     }
 
+    public BillDto fillAccount(BillDto billDto) {
+        return accountRepository.findById(billDto.getId())
+                .map(account -> {
+                    account.setAmount(account.getAmount() + exchangeService.exchange(billDto.getAmount(), billDto.getCurrency(), account.getCurrency()));
+                    accountRepository.save(account);
+                    Transaction tx = createTransaction(CreateTxRequestDto
+                            .builder()
+                            .amount(billDto.getAmount())
+                            .build(), null, null, account);
+                    return billDto.builder()
+                            .accountName(account.getName())
+                            .currency(account.getCurrency())
+                            .transactionDate(tx.getDateTime())
+                            .id(tx.getId())
+                            .build();
+                })
+                .orElseThrow(() -> new AccountNotFoundException(billDto.getId()));
 
+    }
 }

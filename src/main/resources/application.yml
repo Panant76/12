@@ -9,5 +9,12 @@ spring:
     database: POSTGRESQL
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
       dialect: org.hibernate.dialect.PostgreSQL10Dialect
+  flyway:
+    locations: "classpath:db.migrations"
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: root
+    driverClassName: org.postgresql.Driver
+    defaultSchema: organizer

@@ -1,6 +1,6 @@
 package by.vitstep.organizer.model.entity.enums;
 
 public enum Roles {
-    ADMIN,
-    USER
+    ROLE_ADMIN,
+    ROLE_USER
 }

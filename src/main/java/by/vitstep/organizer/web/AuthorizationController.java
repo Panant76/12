@@ -9,8 +9,8 @@ import by.vitstep.organizer.model.mapping.UserMapper;
 import by.vitstep.organizer.security.JwtUtil;
 import by.vitstep.organizer.service.UserService;
 import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +27,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor
+
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class  AuthorizationController {
     UserService service;
@@ -36,10 +36,18 @@ public class  AuthorizationController {
     PasswordEncoder encoder;
     AuthenticationManager manager;
 
+    public AuthorizationController(UserService service, UserMapper mapper, JwtUtil util, @Qualifier("major") PasswordEncoder encoder, AuthenticationManager manager) {
+        this.service = service;
+        this.mapper = mapper;
+        this.util = util;
+        this.encoder = encoder;
+        this.manager = manager;
+    }
+
     @PostMapping("/registr")
     public ResponseEntity<UserDto> registr(@RequestBody RegistrationRequest request) {
         request.setPassword(encoder.encode(request.getPassword()));
-        request.setRoles(List.of(Roles.USER));
+        request.setRoles(List.of(Roles.ROLE_USER));
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(service.createUser(request));
@@ -47,7 +55,7 @@ public class  AuthorizationController {
     @PostMapping("/registrAdmin")
     public ResponseEntity<UserDto> registrAdmin(@RequestBody RegistrationRequest request){
         request.setPassword(encoder.encode(request.getPassword()));
-        request.setRoles(List.of(Roles.ADMIN));
+        request.setRoles(List.of(Roles.ROLE_ADMIN));
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(service.createUser(request));

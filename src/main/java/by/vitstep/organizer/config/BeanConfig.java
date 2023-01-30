@@ -24,7 +24,7 @@ public class BeanConfig {
     private final ProjectConfiguration projectConfiguration;
 
     @Bean
-    @Primary
+    @Primary// чтобы Спринг использовал его по-умолчанию
     public ObjectMapper defaultObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         LocalDateTimeDeserializer localDateTimeDeserializer = new LocalDateTimeDeserializer(
