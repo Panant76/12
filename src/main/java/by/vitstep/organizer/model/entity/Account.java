@@ -13,8 +13,10 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Builder
 public class Account {
+    private static final String SEQ_NAME = "account_id_seq";
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SEQ_NAME)
+    @SequenceGenerator(name = SEQ_NAME, sequenceName = SEQ_NAME, allocationSize = 1)
     Long id;
     @Column(unique = true)
     String name;

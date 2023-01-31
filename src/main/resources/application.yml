@@ -14,7 +14,7 @@ spring:
   flyway:
     locations: "classpath:db.migrations"
     url: jdbc:postgresql://localhost:5432/postgres
-    username: postgres
+    user: postgres
     password: root
     driverClassName: org.postgresql.Driver
     defaultSchema: organizer

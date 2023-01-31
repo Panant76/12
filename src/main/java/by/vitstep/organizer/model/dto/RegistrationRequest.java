@@ -20,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RegistrationRequest {
-    @Size(min = 5, max = 15)
+    @Size(min = 5, max = 12)
     @NotBlank
     String login;
     @Size(min = 8, max = 20)
@@ -29,6 +29,12 @@ public class RegistrationRequest {
     @Pattern(regexp = "^\\w+@\\w+\\.\\w+$")
     String email;
     String name;
+    @NotBlank
+    @Pattern(regexp = "^\\+[1-9]{1}[0-9]{6,16}$")
+    //@Pattern(regexp = "^(\\+)+\\d+$")
+    //@Size(max = 16, min = 6)
+    String phone;
+
     LocalDate birthday;
 
     @JsonIgnore

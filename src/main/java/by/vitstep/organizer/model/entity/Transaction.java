@@ -13,8 +13,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Transaction {
+    private static final String SEQ_NAME = "transaction_id_seq";
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SEQ_NAME)
+    @SequenceGenerator(name = SEQ_NAME, sequenceName = SEQ_NAME, allocationSize = 1)
     Long id;
     @JoinColumn(name = "source_account")
     @ManyToOne(cascade = CascadeType.REFRESH)

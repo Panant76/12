@@ -9,6 +9,10 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+
 @RestController
 @RequestMapping("/tx")
 @RequiredArgsConstructor
@@ -16,11 +20,12 @@ import org.springframework.web.bind.annotation.*;
 public class TransactionController {
     TransactionService transactionService;
     @GetMapping("/get")
-    public ResponseEntity<TxDto> get(@RequestParam Long id){
+    public ResponseEntity<TxDto> get(@RequestParam @Min(value=1) Long id){
         return ResponseEntity.ok(transactionService.getTx(id));
     }
+    @RolesAllowed("ROLE_USER")
     @PostMapping("/create")
-    public  ResponseEntity<TxDto> create(@RequestBody CreateTxRequestDto request){
+    public  ResponseEntity<TxDto> create(@RequestBody @Valid CreateTxRequestDto request){
         return ResponseEntity.ok(transactionService.doTransact(request));
     }
 }

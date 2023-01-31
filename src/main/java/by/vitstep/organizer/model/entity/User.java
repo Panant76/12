@@ -20,10 +20,14 @@ import java.util.UUID;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class User implements UserDetails {
+    private static final String SEQ_NAME = "org_user_id_seq";
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SEQ_NAME)
+    @SequenceGenerator(name = SEQ_NAME, sequenceName = SEQ_NAME, allocationSize = 1)
     Long id;
-    @GeneratedValue(strategy = GenerationType.AUTO)
+
+    // Данная колонка имеет тип READ_ONLY потому что её значение генерируется базой данных
+    @Column(insertable = false, updatable = false)
     UUID uuid;
     @Column(unique = true)
     String login;
@@ -34,12 +38,14 @@ public class User implements UserDetails {
     LocalDate birthday;
     @ManyToMany(mappedBy = "user")
     List<Friend> friendList;
-    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     List<Authority> authorities;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.authorities;
     }
+
     @Override
     public String getUsername() {
         return this.login;
@@ -64,8 +70,4 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
-
-
-
 }

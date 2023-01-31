@@ -1,14 +1,20 @@
 package by.vitstep.organizer.service;
 
-import by.vitstep.organizer.exception.FriendAlreadyExistException;
 import by.vitstep.organizer.model.dto.FriendDto;
 import by.vitstep.organizer.model.entity.Friend;
+import by.vitstep.organizer.model.entity.User;
 import by.vitstep.organizer.model.mapping.FriendMapper;
 import by.vitstep.organizer.repository.FriendRepository;
+import by.vitstep.organizer.repository.UserRepository;
+import by.vitstep.organizer.utils.SecurityUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -16,15 +22,18 @@ import org.springframework.stereotype.Service;
 public class FriendService {
     FriendRepository friendRepository;
     FriendMapper friendMapper;
+    UserRepository userRepository;
 
-    public FriendDto createFriend(FriendDto friend) {
-        Friend friendToSave = friendMapper.toEntity(friend);
-        try {
-            friendRepository.save(friendToSave);
-        } catch (Exception ex) {
-            throw new FriendAlreadyExistException("!!!");
-        }
-        return friendMapper.toDto(friendToSave);
+    @Transactional
+    public FriendDto createFriend(FriendDto friendDto) {
+        Friend friend = friendMapper.toEntity(friendDto);
+        Optional<User> userOptional = userRepository.findByPhone(friend.getContacts().getPhone());
+        userOptional.ifPresent(user -> friend.setUuid(user.getUuid()));
+        User currentUser = SecurityUtil.getCurrentUser().orElseThrow(() -> new AuthenticationServiceException("Ошибка авторизации"));
+        friend.setUser(currentUser);
+        friendRepository.save(friend);
+        return friendMapper.toDto(friend);
     }
 }
+
 

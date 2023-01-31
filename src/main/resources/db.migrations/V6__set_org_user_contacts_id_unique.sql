@@ -1,0 +1,1 @@
+alter table org_user add constraint org_user_contacts_unique UNIQUE (contacts_id);

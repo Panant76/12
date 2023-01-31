@@ -6,6 +6,6 @@ project:
   token_lifetime_hours: 1
  business:
   archivation_period_days: 90
-  sheduling:
+  scheduling:
     morning-cron: 0 30 10 * * *
     evening-cron: 0 30 18 * * *

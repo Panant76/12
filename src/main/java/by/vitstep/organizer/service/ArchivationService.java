@@ -66,24 +66,24 @@ public class ArchivationService {
         System.out.println("" + LocalDateTime.now() + "Процедура архивирования завершена!");
     }
 
-    @Transactional
-    @Scheduled
-    public void checkFriendUuid() {
-        friendRepository.findFriendUuidIsNull()
-                .stream()
-                .collect(Collectors.toMap(friend -> friend, friend -> friend.getContacts().getPhone()))
-                .forEach((friend, friendPhoneList) -> {
-                    userRepository.findAll()
-                            .stream()
-                            .collect(Collectors.toMap(user -> user, user -> user.getContacts().getPhone()))
-                            .forEach((user, userPhoneList) ->
-                                    userPhoneList.stream()
-                                            .forEach((phone) -> {
-                                                if (friendPhoneList.contains(phone)) {
-                                                    friend.setUuid(user.getUuid());
-                                                }
-                                            }));
-                });
-
-    }
+//    @Transactional
+//    @Scheduled
+//    public void checkFriendUuid() {
+//        friendRepository.findFriendUuidIsNull()
+//                .stream()
+//                .collect(Collectors.toMap(friend -> friend, friend -> friend.getContacts().getPhone()))
+//                .forEach((friend, friendPhoneList) -> {
+//                    userRepository.findAll()
+//                            .stream()
+//                            .collect(Collectors.toMap(user -> user, user -> user.getContacts().getPhone()))
+//                            .forEach((user, userPhoneList) ->
+//                                    userPhoneList.stream()
+//                                            .forEach((phone) -> {
+//                                                if (friendPhoneList.contains(phone)) {
+//                                                    friend.setUuid(user.getUuid());
+//                                                }
+//                                            }));
+//                });
+//
+//    }
 }
