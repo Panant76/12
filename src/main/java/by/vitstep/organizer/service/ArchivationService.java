@@ -1,6 +1,10 @@
 package by.vitstep.organizer.service;
 
 import by.vitstep.organizer.config.ProjectConfiguration;
+import by.vitstep.organizer.exception.AccountNotFoundException;
+import by.vitstep.organizer.model.dto.AbstractArchiveStatsDto;
+import by.vitstep.organizer.model.dto.enums.ArchiveStatsType;
+import by.vitstep.organizer.model.entity.Account;
 import by.vitstep.organizer.model.entity.Archive;
 import by.vitstep.organizer.model.entity.Transaction;
 import by.vitstep.organizer.repository.*;
@@ -13,8 +17,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static by.vitstep.organizer.model.dto.enums.ArchiveStatsType.*;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +33,19 @@ public class ArchivationService {
     ProjectConfiguration projectConfiguration;
     FriendRepository friendRepository;
     UserRepository userRepository;
+
+    private static Object apply(Archive archive) throws EnumConstantNotPresentException {
+        if (ALL) {
+            archive.getIncom();
+            archive.getSpend();
+        } else if (INCOME) {
+            archive.getIncom();
+        } else if (SPEND) {
+            archive.getSpend();
+        }
+        else throw new EnumConstantNotPresentException(ArchiveStatsType.class,null);
+        return archive;
+    }
 
     @Async
     @Transactional
@@ -61,7 +81,7 @@ public class ArchivationService {
                                     .build());
                             return entry.getValue();
                         })
-                        .flatMap(list -> list.stream())
+                        .flatMap(Collection::stream)
                         .collect(Collectors.toList()));
         System.out.println("" + LocalDateTime.now() + "Процедура архивирования завершена!");
     }
@@ -86,4 +106,10 @@ public class ArchivationService {
 //                });
 //
 //    }
+    public AbstractArchiveStatsDto getStats(Long id, ArchiveStatsType type){
+        Account account=accountRepository.findById(id).orElseThrow(()->new AccountNotFoundException(id));
+        archiveRepository.findByAccount(account).map(ArchivationService::apply);
+        return null; //???
+    }
+
 }

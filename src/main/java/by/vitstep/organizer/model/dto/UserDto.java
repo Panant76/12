@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserDto {
-    //Long id;
+    Long id;
     String login;
     String password;
     String name;

@@ -1,14 +1,13 @@
 package by.vitstep.organizer.service;
 
-import by.vitstep.organizer.exception.UserAlreadyExistException;
 import by.vitstep.organizer.model.dto.RegistrationRequest;
 import by.vitstep.organizer.model.dto.UserDto;
 import by.vitstep.organizer.model.entity.Authority;
 import by.vitstep.organizer.model.entity.Contacts;
 import by.vitstep.organizer.model.entity.User;
 import by.vitstep.organizer.model.mapping.UserMapper;
-import by.vitstep.organizer.repository.FriendRepository;
 import by.vitstep.organizer.repository.UserRepository;
+import by.vitstep.organizer.service.handler.UserCreationHandler;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -24,7 +23,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 
-
 @Slf4j
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -32,9 +30,10 @@ import java.util.stream.Collectors;
 public class UserService implements UserDetailsService {
     UserRepository userRepository;
     UserMapper userMapper;
-    FriendRepository friendRepository;
+    FriendService friendService;
+    UserCreationHandler userCreationHandler;
 
-@Transactional
+    @Transactional
     public UserDto createUser(RegistrationRequest request) {
         User userToSave = userMapper.registrationToEntity(request);
         userToSave.setAuthorities(request
@@ -48,37 +47,21 @@ public class UserService implements UserDetailsService {
                 .collect(Collectors.toList()));
         userToSave.setContacts(Contacts.builder()
                 .phone(request.getPhone())
-                .email(List.of(request.getEmail()))
+                .email(Optional.ofNullable(request.getEmail())
+                        .map(List::of)
+                        .orElse(List.of()))
                 .build());
-        return create(userToSave);
+        final UserDto result = userMapper.toDto(userCreationHandler.doCreate(userToSave));
+        friendService.friendUpdateWithUuid(result.getId());
+        return result;
 
-    }
-    public UserDto create(User userToSave){
-        try {
-            userRepository.save(userToSave);
-//            userRepository.findById(userToSave.getId())
-//            .map(user -> {
-//                friendRepository.findByPhone(user.getContacts().getPhone())
-//                        .forEach(friend -> {
-//                            friend.setUuid(user.getUuid());
-//                            friendRepository.save(friend);
-//                        });
-//                return user;
-//            })
-//                    .orElseThrow(()->new UserNotFoundException(userToSave.getId()));
-        }catch(Exception ex){
-            log.error(ex.getMessage(), ex);
-            throw new UserAlreadyExistException(String.format("Логин %s уже занят", userToSave.getLogin()));
-        }
-        return userMapper.toDto(userToSave);
-    }
-
-    @Override
+    }    @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
         return userRepository.findByLogin(userName)
-                .orElseThrow(()->new UsernameNotFoundException("Не верное имя пользователя или пароль"));
+                .orElseThrow(() -> new UsernameNotFoundException("Не верное имя пользователя или пароль"));
     }
-    public Optional<User> getById(final Long id){
+
+    public Optional<User> getById(final Long id) {
         return userRepository.findById(id);
     }
 

@@ -1,5 +1,6 @@
 package by.vitstep.organizer.service;
 
+import by.vitstep.organizer.exception.UserNotFoundException;
 import by.vitstep.organizer.model.dto.FriendDto;
 import by.vitstep.organizer.model.entity.Friend;
 import by.vitstep.organizer.model.entity.User;
@@ -33,6 +34,19 @@ public class FriendService {
         friend.setUser(currentUser);
         friendRepository.save(friend);
         return friendMapper.toDto(friend);
+    }
+    @Transactional
+    public void friendUpdateWithUuid(Long userId){
+        userRepository.findById(userId)
+                .map(user->{
+                    friendRepository.findByPhone(user.getContacts().getPhone()).forEach(friend->{
+                        friend.setUuid(user.getUuid());
+                        friendRepository.save(friend);
+                    });
+                    return user;
+                })
+                .orElseThrow(()->new UserNotFoundException(userId));
+
     }
 }
 
