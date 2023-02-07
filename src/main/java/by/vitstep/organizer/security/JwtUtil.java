@@ -11,6 +11,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import javax.validation.constraints.NotNull;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -64,8 +65,9 @@ public class JwtUtil {
                 .compact();
 
     }
-    public Claims validateAndGet(final String token){
-        final SecretKey key=getSecretKey();
+
+    public Claims validateAndGet(final String token) {
+        final SecretKey key = getSecretKey();
         return Jwts.parserBuilder()
                 .requireSubject("organizer")
                 .setSigningKey(key)

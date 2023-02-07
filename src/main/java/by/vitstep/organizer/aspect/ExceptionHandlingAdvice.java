@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice(basePackages = "by.vitstep.organizer.web")
 public class ExceptionHandlingAdvice {
-    @ExceptionHandler(value = {UserNotFoundException.class, AccountNotFoundException.class})
+    @ExceptionHandler(value = {UserNotFoundException.class, AccountNotFoundException.class, NotEnoughFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public CommonException handleNotFound(Exception ex){
         return CommonException

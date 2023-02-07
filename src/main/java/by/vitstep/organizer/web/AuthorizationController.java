@@ -31,7 +31,7 @@ import java.util.List;
 @RequestMapping("/auth")
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class  AuthorizationController {
+public class AuthorizationController {
     UserService service;
     UserMapper mapper;
     JwtUtil util;
@@ -58,22 +58,24 @@ public class  AuthorizationController {
                 .status(HttpStatus.CREATED)
                 .body(service.createUser(request));
     }
+
+    //@RolesAllowed("ROLE_ADMIN")
     @PostMapping("/registrAdmin")
-    public ResponseEntity<UserDto> registrAdmin(@RequestBody RegistrationRequest request){
+    public ResponseEntity<UserDto> registrAdmin(@RequestBody RegistrationRequest request) {
         request.setPassword(encoder.encode(request.getPassword()));
         request.setRoles(List.of(Roles.ROLE_ADMIN));
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(service.createUser(request));
     }
-    @RolesAllowed("ROLE_ADMIN")
+
     @PostMapping("/login")
-    public ResponseEntity<UserDto> login(@RequestBody LoginRequest request){
-        Authentication authentication=manager
-                .authenticate(new UsernamePasswordAuthenticationToken(request.getLogin(),request.getPassword()));
-        User user=(User)authentication.getPrincipal();
+    public ResponseEntity<UserDto> login(@RequestBody LoginRequest request) {
+        Authentication authentication = manager
+                .authenticate(new UsernamePasswordAuthenticationToken(request.getLogin(), request.getPassword()));
+        User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok()
-                .header(HttpHeaders.AUTHORIZATION,util.generateToken(user))
+                .header(HttpHeaders.AUTHORIZATION, util.generateToken(user))
                 .body(mapper.toDto(user));
     }
 }

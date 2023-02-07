@@ -26,14 +26,16 @@ public class RegistrationRequest {
     @Size(min = 8, max = 20)
     @NotBlank
     String password;
-    @Pattern(regexp = "^\\w+@\\w+\\.\\w+$")
-    String email;
+
+
     String name;
     @NotBlank
     @Pattern(regexp = "^\\+[1-9]{1}[0-9]{6,16}$")
     //@Pattern(regexp = "^(\\+)+\\d+$")
     //@Size(max = 16, min = 6)
     String phone;
+    @Pattern(regexp = "^\\w+@\\w+\\.\\w+$")
+    String email;
 
     LocalDate birthday;
 

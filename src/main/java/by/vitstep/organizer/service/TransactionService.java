@@ -36,7 +36,6 @@ public class TransactionService {
     CurrencyExchangeService exchangeService;
 
     public TxDto getTx(final Long id) {
-
         return transactionRepository.findById(id)
                 .map(mapper::toDto)
                 .orElseThrow(() -> new TransactionNotFoundException(id));
@@ -50,11 +49,9 @@ public class TransactionService {
     private TxDto doTransferTx(CreateTxRequestDto request) {
         User currentUser = SecurityUtil.getCurrentUser()
                 .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
-        Account sourceAccount = Optional.ofNullable(request.getSourceAccountId())
-                .flatMap(id -> accountRepository.findByIdAndUser(request.getSourceAccountId(), currentUser))
+        Account sourceAccount = accountRepository.findByIdAndUser(request.getSourceAccountId(), currentUser)
                 .orElseThrow(() -> new AccountNotFoundException(request.getSourceAccountId()));
-        Account targetAccount = Optional.ofNullable(request.getTargetAccountId())
-                .flatMap(id -> accountRepository.findById(request.getTargetAccountId()))
+        Account targetAccount = accountRepository.findById(request.getTargetAccountId())
                 .orElseThrow(() -> new AccountNotFoundException(request.getTargetAccountId()));
         if (sourceAccount.getCurrency() == targetAccount.getCurrency()) {
             return txAndSave(sourceAccount, targetAccount, request);
@@ -97,17 +94,18 @@ public class TransactionService {
                     if (SecurityUtil.getCurrentUser()
                             .map(User::getId)
                             .stream()
-                            .anyMatch(id -> id.equals(user.getId()))) {
-                        User self = SecurityUtil.getCurrentUser().get();
-                        return Optional.of(friendRepository.findByUuidAndUser(user.getUuid(), self)
-                                .orElseGet(() -> friendRepository.save(Friend.builder()
-                                        .uuid(self.getUuid())
-                                        .birthday(self.getBirthday())
-                                        .contacts(self.getContacts())
-                                        .user(self)
-                                        .build())));
+                            .anyMatch(id -> !id.equals(user.getId()))) {
+                        return friendRepository.findByUuidAndUser(user.getUuid(), SecurityUtil.getCurrentUser().get());
                     }
-                    return friendRepository.findByUuidAndUser(user.getUuid(), SecurityUtil.getCurrentUser().get());
+                    return SecurityUtil.getCurrentUser()
+                            .map(self -> friendRepository.save(Friend.builder()
+                                    .uuid(user.getUuid())
+                                    .birthday(user.getBirthday())
+                                    .contacts(user.getContacts())
+                                    .name(user.getName())
+                                    .user(self)
+                                    .build()));
+
                 })
                 .orElse(null);
     }

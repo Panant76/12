@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 
@@ -17,6 +18,7 @@ public class UserCreationHandler {
     UserRepository userRepository;
     EntityManager entityManager;
 
+    @Transactional
     public User doCreate(final User userToSave) {
         try {
             User user = userRepository.saveAndFlush(userToSave);
@@ -25,6 +27,6 @@ public class UserCreationHandler {
         } catch (Exception ex) {
             throw new UserAlreadyExistException(String.format("Логин %s уже занят", userToSave.getLogin()));
         }
-
     }
 }
+
