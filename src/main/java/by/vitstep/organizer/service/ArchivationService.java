@@ -103,17 +103,21 @@ public class ArchivationService {
 //
 //    }
     public ArchiveStatsDto getStats(Long id, ArchiveStatsType type) {
+        if(archiveRepository.findAll().isEmpty()){
+
+        }
         Account account = accountRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id));
         return archiveRepository.findByAccount(account).map(archive -> {
-            switch (type){
+            switch (type) {
                 case ALL:
                     return AllArchiveStatsDto.builder()
+                            .accountName(account.getName())//НОМЕР СЧЕТА
                             .dateFrom(archive.getDateFrom())
                             .dateTo(archive.getDateTo())
                             .income(archive.getIncom())
                             .spend(archive.getSpend())
-                            .accountName(account.getName())
                             .build();
+
                 case INCOME:
                     return SingleArchiveStatsDto.builder()
                             .accountName(account.getName())
@@ -121,6 +125,7 @@ public class ArchivationService {
                             .dateTo(archive.getDateTo())
                             .amount(archive.getIncom())
                             .build();
+
                 case SPEND:
                     return SingleArchiveStatsDto.builder()
                             .accountName(account.getName())
@@ -128,10 +133,44 @@ public class ArchivationService {
                             .dateTo(archive.getDateTo())
                             .amount(archive.getSpend())
                             .build();
+
                 default:
-                     throw new BadRequestException("Ошибка сериализации");
+                    throw new BadRequestException("Ошибка сериализации");
             }
-        }).orElseGet(()->ArchiveStatsDto.builder()
+        }).orElseGet(() -> ArchiveStatsDto.builder()
+                .accountName(account.getName())
+                .build());
+    }
+
+    public ArchiveStatsDto getStats1(Long id, ArchiveStatsType type) {
+        Account account = accountRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id));
+        return archiveRepository.findByAccount(account).map(archive -> {
+            ArchiveStatsDto.builder()
+                    .accountName(account.getName())//НОМЕР СЧЕТА
+                    .dateFrom(archive.getDateFrom())
+                    .dateTo(archive.getDateTo())
+                    .build();
+            switch (type) {
+                case ALL:
+                    return AllArchiveStatsDto.builder()
+                            .income(archive.getIncom())
+                            .spend(archive.getSpend())
+                            .build();
+
+                case INCOME:
+                    return SingleArchiveStatsDto.builder()
+                            .amount(archive.getIncom())
+                            .build();
+
+                case SPEND:
+                    return SingleArchiveStatsDto.builder()
+                            .amount(archive.getSpend())
+                            .build();
+
+                default:
+                    throw new BadRequestException("Ошибка сериализации");
+            }
+        }).orElseGet(() -> ArchiveStatsDto.builder()
                 .accountName(account.getName())
                 .build());
     }

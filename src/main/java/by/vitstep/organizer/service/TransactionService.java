@@ -53,15 +53,16 @@ public class TransactionService {
                 .orElseThrow(() -> new AccountNotFoundException(request.getSourceAccountId()));
         Account targetAccount = accountRepository.findById(request.getTargetAccountId())
                 .orElseThrow(() -> new AccountNotFoundException(request.getTargetAccountId()));
-        if (sourceAccount.getCurrency() == targetAccount.getCurrency()) {
-            return txAndSave(sourceAccount, targetAccount, request);
-        } else if (request.getIsAutoConverted()) {
-            request.setAmount(exchangeService.exchange(request.getAmount(), sourceAccount.getCurrency(), targetAccount.getCurrency()));
-            return txAndSave(sourceAccount, targetAccount, request);
-        } else throw new TransactionException("Валюты счетов не совпадают");
-
+        while (sourceAccount != targetAccount) {
+            if (sourceAccount.getCurrency() == targetAccount.getCurrency()) {
+                return txAndSave(sourceAccount, targetAccount, request);
+            } else if (request.getIsAutoConverted()) {
+                request.setAmount(exchangeService.exchange(request.getAmount(), sourceAccount.getCurrency(), targetAccount.getCurrency()));
+                return txAndSave(sourceAccount, targetAccount, request);
+            } else throw new TransactionException("Валюты счетов не совпадают");
+        }
+        throw new TransactionException("Перевод самому себе");
     }
-
     private TxDto txAndSave(Account sourceAccount, Account targetAccount, CreateTxRequestDto request) {
         return Optional.of(sourceAccount)
                 .filter(acc -> acc.getAmount() >= request.getAmount())
