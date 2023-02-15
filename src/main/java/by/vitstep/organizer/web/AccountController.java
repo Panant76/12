@@ -7,9 +7,9 @@ import by.vitstep.organizer.model.dto.ananlytics.AbstractAnalyticsResponseDto;
 import by.vitstep.organizer.model.dto.ananlytics.AnalyticsRequestDto;
 import by.vitstep.organizer.model.dto.enums.ArchiveStatsType;
 import by.vitstep.organizer.service.AccountService;
-import by.vitstep.organizer.service.AnalyticsService;
-import by.vitstep.organizer.service.ArchivationService;
 import by.vitstep.organizer.service.TransactionService;
+import by.vitstep.organizer.service.analytics.AnalyticsService;
+import by.vitstep.organizer.service.analytics.ArchivationService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.naming.AuthenticationException;
 import javax.validation.Valid;
-import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/account")
@@ -62,20 +62,9 @@ public class AccountController {
         return ResponseEntity.ok(transactionService.fillAccount(billDto));
     }
 
-    @GetMapping("/get-analytics")
-    public ResponseEntity<? extends AbstractAnalyticsResponseDto> getAnalytics(@RequestParam Long accountId,
-                                                                               @RequestParam ArchiveStatsType type,
-                                                                               @RequestParam(required = false) LocalDateTime dateFrom,
-                                                                               @RequestParam(required = false) LocalDateTime dateTo,
-                                                                               @RequestParam(required = false) Float gtThan,
-                                                                               @RequestParam(required = false) Float lsThan) throws AuthenticationException {
-        return ResponseEntity.ok(analyticsService.getTxAnalytics(AnalyticsRequestDto.builder()
-                .type(type)
-                .accountId(accountId)
-                .dateFrom(dateFrom)
-                .dateTo(dateTo)
-                .greaterThan(gtThan)
-                .lessThan(lsThan)
-                .build()));
+    @PostMapping("/get-analytics")
+    public ResponseEntity<List<? extends AbstractAnalyticsResponseDto>> getAnalytics(@RequestBody  AnalyticsRequestDto requestDto) throws AuthenticationException {
+        return ResponseEntity.ok(analyticsService.getTxAnalytics(requestDto));
+
     }
 }

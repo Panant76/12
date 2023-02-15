@@ -1,4 +1,4 @@
-package by.vitstep.organizer.service;
+package by.vitstep.organizer.service.analytics;
 
 import by.vitstep.organizer.config.ProjectConfiguration;
 import by.vitstep.organizer.exception.AccountNotFoundException;

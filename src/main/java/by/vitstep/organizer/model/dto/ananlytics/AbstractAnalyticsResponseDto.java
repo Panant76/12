@@ -14,4 +14,5 @@ public class AbstractAnalyticsResponseDto {
     String accountName;
     LocalDateTime dateFrom;
     LocalDateTime dateTo;
+    FriendShortInfoDto friend;
 }

@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -50,8 +49,8 @@ public class AuthorizationController {
         this.manager = manager;
     }
 
-    @PostMapping("/registr")
-    public ResponseEntity<UserDto> registr(@RequestBody @Valid RegistrationRequest request) {
+    @PostMapping("/register")
+    public ResponseEntity<UserDto> register(@RequestBody @Valid RegistrationRequest request) {
         request.setPassword(encoder.encode(request.getPassword()));
         request.setRoles(List.of(Roles.ROLE_USER));
         return ResponseEntity
@@ -60,8 +59,8 @@ public class AuthorizationController {
     }
 
     //@RolesAllowed("ROLE_ADMIN")
-    @PostMapping("/registrAdmin")
-    public ResponseEntity<UserDto> registrAdmin(@RequestBody RegistrationRequest request) {
+    @PostMapping("/registerAdmin")
+    public ResponseEntity<UserDto> registerAdmin(@RequestBody RegistrationRequest request) {
         request.setPassword(encoder.encode(request.getPassword()));
         request.setRoles(List.of(Roles.ROLE_ADMIN));
         return ResponseEntity
