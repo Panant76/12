@@ -104,6 +104,11 @@ public class AnalyticsService {
                     .concat(requestDto.getGreaterThan().toString()
                             .concat(" "));
         }
+        if (ObjectUtils.isNotEmpty(requestDto.getFriendsIdList())) {
+            query = query.concat("friend_id= ")
+                    .concat(requestDto.getFriendsIdList().toString()
+                            .concat(" "));
+        }
         return query.concat(";");
 
     }
@@ -149,7 +154,7 @@ public class AnalyticsService {
         buildDate(requestDto, builder);
         return builder.build();
     }
-
+//Метод для определения периода вывода аналитики
     private <T extends AbstractAnalyticsResponseDto.AbstractAnalyticsResponseDtoBuilder> void buildDate(AnalyticsRequestDto requestDto, T builder) {
         builder.dateFrom(ObjectUtils.isNotEmpty(requestDto.getDateFrom()) ?
                 requestDto.getDateFrom() :

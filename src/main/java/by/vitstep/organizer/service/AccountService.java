@@ -7,10 +7,11 @@ import by.vitstep.organizer.model.entity.Account;
 import by.vitstep.organizer.model.entity.User;
 import by.vitstep.organizer.model.mapping.AccountMapper;
 import by.vitstep.organizer.repository.AccountRepository;
-import by.vitstep.organizer.repository.UserRepository;
+import by.vitstep.organizer.utils.SecurityUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,8 +25,12 @@ public class AccountService {
 
     @Transactional
     public AccountDto createAccount(AccountDto accountDto) {
+        if(ObjectUtils.isEmpty(accountDto.getName())){
+            accountDto.setName(SecurityUtil.getCurrentUser().get().getName().concat(accountDto.getCurrency().toString()));
+        }
         Account accountToSave = accountMapper.toEntity(accountDto);
         accountToSave.setUser((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+
         try {
             accountRepository.save(accountToSave);
         } catch (Exception ex) {
