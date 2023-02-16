@@ -19,6 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+// Шаблон(Форма) запроса на регистрацию
 public class RegistrationRequest {
     @Size(min = 5, max = 12)
     @NotBlank
@@ -41,4 +42,5 @@ public class RegistrationRequest {
 
     @JsonIgnore
     List<Roles> roles;
+    Boolean createAccounts=false;
 }

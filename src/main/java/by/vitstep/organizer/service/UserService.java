@@ -32,6 +32,7 @@ public class UserService implements UserDetailsService {
     UserMapper userMapper;
     FriendService friendService;
     UserCreationHandler userCreationHandler;
+    AccountService accountService;
 
     @Transactional
     public UserDto createUser(RegistrationRequest request) {
@@ -51,10 +52,10 @@ public class UserService implements UserDetailsService {
                         .map(List::of)
                         .orElse(List.of()))
                 .build());
+        if (request.getCreateAccounts()) accountService.createAllAccount(request.getName());
         final UserDto result = userMapper.toDto(userCreationHandler.doCreate(userToSave));
         friendService.friendUpdateWithUuid(result.getId());
         return result;
-
     }    @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
         return userRepository.findByLogin(userName)

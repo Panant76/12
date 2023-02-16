@@ -5,6 +5,7 @@ import by.vitstep.organizer.exception.AccountNotFoundException;
 import by.vitstep.organizer.model.dto.AccountDto;
 import by.vitstep.organizer.model.entity.Account;
 import by.vitstep.organizer.model.entity.User;
+import by.vitstep.organizer.model.entity.enums.Currency;
 import by.vitstep.organizer.model.mapping.AccountMapper;
 import by.vitstep.organizer.repository.AccountRepository;
 import by.vitstep.organizer.utils.SecurityUtil;
@@ -25,7 +26,7 @@ public class AccountService {
 
     @Transactional
     public AccountDto createAccount(AccountDto accountDto) {
-        if(ObjectUtils.isEmpty(accountDto.getName())){
+        if (ObjectUtils.isEmpty(accountDto.getName())) {
             accountDto.setName(SecurityUtil.getCurrentUser().get().getName().concat(accountDto.getCurrency().toString()));
         }
         Account accountToSave = accountMapper.toEntity(accountDto);
@@ -37,6 +38,16 @@ public class AccountService {
             throw new AccountAlreadyExistException(accountDto.getName());
         }
         return accountMapper.toDto(accountToSave);
+    }
+
+    @Transactional
+    public void createAllAccount(String name) {
+        for (Currency cur : Currency.values()) {
+            createAccount(AccountDto.builder()
+                    .currency(cur)
+                    .name(name.concat(cur.toString()))
+                    .build());
+        }
     }
 
     public AccountDto getAccountById(Long id) {

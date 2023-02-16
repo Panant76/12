@@ -63,6 +63,7 @@ public class TransactionService {
         }
         throw new TransactionException("Перевод самому себе");
     }
+
     private TxDto txAndSave(Account sourceAccount, Account targetAccount, CreateTxRequestDto request) {
         return Optional.of(sourceAccount)
                 .filter(acc -> acc.getAmount() >= request.getAmount())
@@ -116,8 +117,7 @@ public class TransactionService {
                 .map(account -> {
                     account.setAmount(account.getAmount() + exchangeService.exchange(billDto.getAmount(), billDto.getCurrency(), account.getCurrency()));
                     accountRepository.save(account);
-                    Transaction tx = createTransaction(CreateTxRequestDto
-                            .builder()
+                    Transaction tx = createTransaction(CreateTxRequestDto.builder()
                             .amount(billDto.getAmount())
                             .build(), null, null, account);
                     return billDto.builder()
