@@ -50,6 +50,11 @@ CREATE TABLE authority (
     authority character varying(255),
     user_id bigint references org_user(id)
 );
+create table friend_group (
+    id bigserial primary key,
+    name varchar(255) not null,
+    user_id bigint references org_user(id) not null
+);
 
 CREATE TABLE friend (
     id bigserial primary key,
@@ -57,10 +62,11 @@ CREATE TABLE friend (
     name character varying(255),
     contacts_id bigint references contacts(id),
     user_id bigint references org_user(id),
+    friend_group_id bigint references friend_group(id),
     uuid uuid
 );
 
-CREATE TABLE transactions (
+CREATE TABLE transaction (
     id bigserial primary key,
     amount real,
     date_time timestamp without time zone,
