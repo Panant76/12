@@ -73,7 +73,7 @@ public class TransactionService {
                     accountRepository.save(account);
                     accountRepository.save(targetAccount);
 
-                    return mapper.toDto(createTransaction(request, getFriend(targetAccount), sourceAccount, targetAccount));
+                    return mapper.toDto(createTransaction(request, getFriend(targetAccount), account, targetAccount));
                 })
                 .orElseThrow(() -> new NotEnoughFoundException(sourceAccount.getName()));
     }
@@ -92,42 +92,42 @@ public class TransactionService {
 
     private Friend getFriend(Account targetAccount) {
         return Optional.ofNullable(targetAccount.getUser())
-                .flatMap(user -> {
+                .map(user -> {
                     if (SecurityUtil.getCurrentUser()
                             .map(User::getId)
                             .stream()
                             .anyMatch(id -> !id.equals(user.getId()))) {
-                        return friendRepository.findByUuidAndUser(user.getUuid(), SecurityUtil.getCurrentUser().get());
+                        return friendRepository.findByUuidAndUser(user.getUuid(), SecurityUtil.getCurrentUser().get())
+                                .orElseGet(() -> SecurityUtil.getCurrentUser()
+                                        .map(self -> friendRepository.save(Friend.builder()
+                                                .uuid(user.getUuid())
+                                                .birthday(user.getBirthday())
+                                                .contacts(user.getContacts())
+                                                .name(user.getName())
+                                                .user(self)
+                                                .build()))
+                                        .orElse(null));
                     }
-                    return SecurityUtil.getCurrentUser()
-                            .map(self -> friendRepository.save(Friend.builder()
-                                    .uuid(user.getUuid())
-                                    .birthday(user.getBirthday())
-                                    .contacts(user.getContacts())
-                                    .name(user.getName())
-                                    .user(self)
-                                    .build()));
-
-                })
-                .orElse(null);
+                    return null;
+                }).orElse(null);
     }
 
-    public BillDto fillAccount(BillDto billDto) {
-        return accountRepository.findById(billDto.getId())
-                .map(account -> {
-                    account.setAmount(account.getAmount() + exchangeService.exchange(billDto.getAmount(), billDto.getCurrency(), account.getCurrency()));
-                    accountRepository.save(account);
-                    Transaction tx = createTransaction(CreateTxRequestDto.builder()
-                            .amount(billDto.getAmount())
-                            .build(), null, null, account);
-                    return billDto.builder()
-                            .accountName(account.getName())
-                            .currency(account.getCurrency())
-                            .transactionDate(tx.getDateTime())
-                            .id(tx.getId())
-                            .build();
-                })
-                .orElseThrow(() -> new AccountNotFoundException(billDto.getId()));
+        public BillDto fillAccount (BillDto billDto){
+            return accountRepository.findById(billDto.getId())
+                    .map(account -> {
+                        account.setAmount(account.getAmount() + exchangeService.exchange(billDto.getAmount(), billDto.getCurrency(), account.getCurrency()));
+                        accountRepository.save(account);
+                        Transaction tx = createTransaction(CreateTxRequestDto.builder()
+                                .amount(billDto.getAmount())
+                                .build(), null, null, account);
+                        return billDto.builder()
+                                .accountName(account.getName())
+                                .currency(account.getCurrency())
+                                .transactionDate(tx.getDateTime())
+                                .id(tx.getId())
+                                .build();
+                    })
+                    .orElseThrow(() -> new AccountNotFoundException(billDto.getId()));
 
+        }
     }
-}

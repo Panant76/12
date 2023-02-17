@@ -8,6 +8,7 @@ import by.vitstep.organizer.model.entity.Account;
 import by.vitstep.organizer.model.entity.Transaction;
 import by.vitstep.organizer.model.entity.User;
 import by.vitstep.organizer.repository.AccountRepository;
+import by.vitstep.organizer.repository.FriendRepository;
 import by.vitstep.organizer.repository.TransactionRepository;
 import by.vitstep.organizer.utils.SecurityUtil;
 import lombok.AccessLevel;
@@ -21,10 +22,7 @@ import javax.naming.AuthenticationException;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -34,6 +32,7 @@ public class AnalyticsService {
     EntityManager entityManager;
     AccountRepository accountRepository;
     ProjectConfiguration projectConfiguration;
+    FriendRepository friendRepository;
 
     @Transactional
     public List<AbstractAnalyticsResponseDto> getTxAnalytics(AnalyticsRequestDto requestDto) throws AuthenticationException {
@@ -41,23 +40,36 @@ public class AnalyticsService {
         Query entityQuery = entityManager.createNativeQuery(query, Transaction.class);
         List<Transaction> transactions = entityQuery.getResultList();
 
+        if (ObjectUtils.isEmpty(requestDto.getFriendsIdList())) {
+            return List.of(buildingAnalyticsResponseDto(requestDto, transactions, null));
+        }
+        /*Map<Long, List<Transaction>> friendTxMap = transactions
+                .stream()
+                .collect(Collectors.toMap(
+                        tx -> tx.getFriend().getId(),
+                        tx1 -> new ArrayList<Transaction>(Collections.singleton(tx1)),
+                        (list1, list2) -> {
+                            list1.addAll(list2);
+                            return list1;
+                        }
+                ));*/
+
         Map<Long, List<Transaction>> friendTxMap = new HashMap<>();
-        List<AbstractAnalyticsResponseDto> resultList = new ArrayList<>();
-        List<Transaction> tmp = new ArrayList<>();
         for (Transaction transaction : transactions) {
             Long friendId = transaction.getFriend().getId();
-
             if (friendTxMap.containsKey(friendId)) {
-                tmp = friendTxMap.get(friendId);
+                List<Transaction> tmp = friendTxMap.get(friendId);
                 tmp.add(transaction);
                 friendTxMap.replace(friendId, tmp);
             } else {
+                List<Transaction> tmp = new ArrayList<>();
                 tmp.add(transaction);
                 friendTxMap.put(friendId, tmp);
             }
         }
-        for (List<Transaction> tx : friendTxMap.values()) {
-            resultList.add(buildingAnalyticsResponseDto(requestDto, tx));
+        List<AbstractAnalyticsResponseDto> resultList = new ArrayList<>();
+        for (Map.Entry<Long, List<Transaction>> entry : friendTxMap.entrySet()) {
+            resultList.add(buildingAnalyticsResponseDto(requestDto, entry.getValue(), entry.getKey()));
 
         }
         return resultList;
@@ -113,27 +125,16 @@ public class AnalyticsService {
 
     }
 
-    private AbstractAnalyticsResponseDto buildingAnalyticsResponseDto(AnalyticsRequestDto requestDto, List<Transaction> transactions) throws AuthenticationException {
+    private AbstractAnalyticsResponseDto buildingAnalyticsResponseDto(AnalyticsRequestDto requestDto, List<Transaction> transactions, Long friendId) throws AuthenticationException {
         User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
-
         Account account = accountRepository.findByIdAndUser(requestDto.getAccountId(), user)
                 .orElseThrow(() -> new AccountNotFoundException(requestDto.getAccountId()));
 
         if (ObjectUtils.isEmpty(transactions)) {
-            EmptyAnalyticsResponseDto.EmptyAnalyticsResponseDtoBuilder builder = EmptyAnalyticsResponseDto.builder();
-            buildDate(requestDto, builder);
-            builder.message("Данные не найдены");
-            return builder.accountName(account.getName()).build();
+            return getEmptyAnalyticsResponseDto(requestDto, account, friendId);
         }
         if (requestDto.getType() != ArchiveStatsType.ALL) {
-            SingleTypeAnalyticsResponseDto.SingleTypeAnalyticsResponseDtoBuilder builder = SingleTypeAnalyticsResponseDto.builder()
-                    .accountName(account.getName())
-                    .amount(transactions.stream()
-                            .map(Transaction::getAmount)
-                            .reduce(Float::sum)
-                            .orElse(0F));
-            buildDate(requestDto, builder);
-            return builder.build();
+            return getSingleTypeResponseDto(requestDto, account, transactions);
         }
         return getAllTypesResponseDto(requestDto, account, transactions);
     }
@@ -150,12 +151,56 @@ public class AnalyticsService {
                         .map(Transaction::getAmount)
                         .reduce(Float::sum)
                         .orElse(0F))
-                .accountName(account.getName());
+                .accountName(account.getName())
+                .friend(buildFrendInfo(transactions));
         buildDate(requestDto, builder);
         return builder.build();
     }
-//Метод для определения периода вывода аналитики
-    private <T extends AbstractAnalyticsResponseDto.AbstractAnalyticsResponseDtoBuilder> void buildDate(AnalyticsRequestDto requestDto, T builder) {
+
+    private SingleTypeAnalyticsResponseDto getSingleTypeResponseDto(AnalyticsRequestDto requestDto, Account account, List<Transaction> transactions) {
+        SingleTypeAnalyticsResponseDto.SingleTypeAnalyticsResponseDtoBuilder builder = SingleTypeAnalyticsResponseDto.builder()
+                .accountName(account.getName())
+                .amount(transactions.stream()
+                        .map(Transaction::getAmount)
+                        .reduce(Float::sum)
+                        .orElse(0F))
+                .friend(buildFrendInfo(transactions));
+        buildDate(requestDto, builder);
+        return builder.build();
+    }
+
+    private EmptyAnalyticsResponseDto getEmptyAnalyticsResponseDto(AnalyticsRequestDto requestDto, Account account, Long friendId) {
+        EmptyAnalyticsResponseDto.EmptyAnalyticsResponseDtoBuilder builder = EmptyAnalyticsResponseDto.builder();
+        builder.accountName(account.getName());
+        builder.message("Данные не найдены");
+        if (ObjectUtils.isNotEmpty(friendId)) {
+            builder.friend(friendRepository.findById(friendId)
+                    .map(friend -> FriendShortInfoDto.builder()
+                            .id(friendId)
+                            .name(friend.getName())
+                            .build())
+                    .orElse(null));
+        }
+        buildDate(requestDto, builder);
+        return builder.build();
+    }
+
+    private FriendShortInfoDto buildFrendInfo(List<Transaction> transactions) {
+        return transactions
+                .stream()
+                .filter(tx -> Objects.nonNull(tx.getFriend()))
+                .findFirst()
+                .map(Transaction::getFriend)
+                .map(friend -> FriendShortInfoDto.builder()
+                        .id(friend.getId())
+                        .name(friend.getName())
+                        .build())
+                .orElse(null);
+    }
+
+    //Метод для определения периода вывода аналитики
+    private <T extends AbstractAnalyticsResponseDto.AbstractAnalyticsResponseDtoBuilder> void buildDate
+    (AnalyticsRequestDto requestDto, T builder) {
         builder.dateFrom(ObjectUtils.isNotEmpty(requestDto.getDateFrom()) ?
                 requestDto.getDateFrom() :
                 LocalDateTime.now().minusDays(projectConfiguration.getBusiness().getArchivationPeriodDays()));

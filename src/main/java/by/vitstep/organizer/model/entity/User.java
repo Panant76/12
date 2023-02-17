@@ -40,6 +40,8 @@ public class User implements UserDetails {
     List<Friend> friendList;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     List<Authority> authorities;
+    @OneToMany
+    FriendGroup friendGroup;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -1,24 +1,24 @@
-CREATE TABLE organizer.contacts (
+CREATE TABLE contacts (
     id bigserial primary key,
     address character varying(255)
 );
 
-CREATE TABLE organizer.contacts_email (
+CREATE TABLE contacts_email (
     contacts_id bigint references contacts(id),
     email character varying(255)
 );
 
-CREATE TABLE organizer.contacts_messengers (
+CREATE TABLE contacts_messengers (
     contacts_id bigint references contacts(id),
     messengers character varying(255)
 );
 
-CREATE TABLE organizer.contacts_phone (
+CREATE TABLE contacts_phone (
     contacts_id bigint references contacts(id),
     phone character varying(255)
 );
 
-CREATE TABLE organizer.archive (
+CREATE TABLE archive (
     id bigserial primary key,
     date_from date,
     incom real,
@@ -27,7 +27,7 @@ CREATE TABLE organizer.archive (
     account_id bigint
 );
 
-CREATE TABLE organizer.org_user (
+CREATE TABLE org_user (
     id bigserial primary key,
     birthday date,
     login character varying(255),
@@ -37,7 +37,7 @@ CREATE TABLE organizer.org_user (
     uuid uuid
 );
 
-CREATE TABLE organizer.account (
+CREATE TABLE account (
     id bigserial primary key,
     amount real,
     currency character varying(255),
@@ -45,13 +45,13 @@ CREATE TABLE organizer.account (
     user_id bigint references org_user(id)
 );
 
-CREATE TABLE organizer.authority (
+CREATE TABLE authority (
     id bigserial primary key,
     authority character varying(255),
     user_id bigint references org_user(id)
 );
 
-CREATE TABLE organizer.friend (
+CREATE TABLE friend (
     id bigserial primary key,
     birthday date,
     name character varying(255),
@@ -60,7 +60,7 @@ CREATE TABLE organizer.friend (
     uuid uuid
 );
 
-CREATE TABLE organizer.transaction (
+CREATE TABLE transactions (
     id bigserial primary key,
     amount real,
     date_time timestamp without time zone,
