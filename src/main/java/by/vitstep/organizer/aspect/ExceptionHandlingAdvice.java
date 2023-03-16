@@ -40,4 +40,13 @@ public class ExceptionHandlingAdvice {
                 .build();
 
     }
+    @ExceptionHandler(value = InteractionException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public CommonException handleInteractionException(InteractionException ex) {
+        return CommonException
+                .builder()
+                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .message(ex.getMessage())
+                .build();
+    }
 }

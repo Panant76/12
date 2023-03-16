@@ -4,7 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Builder
@@ -22,6 +22,6 @@ public class Archive {
     Account account;
     Float incom;
     Float spend;
-    LocalDate dateFrom;
-    LocalDate dateTo;
+    LocalDateTime dateFrom;
+    LocalDateTime dateTo;
 }

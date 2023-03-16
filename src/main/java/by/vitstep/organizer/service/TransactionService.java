@@ -120,7 +120,7 @@ public class TransactionService {
                         Transaction tx = createTransaction(CreateTxRequestDto.builder()
                                 .amount(billDto.getAmount())
                                 .build(), null, null, account);
-                        return billDto.builder()
+                        return BillDto.builder()
                                 .accountName(account.getName())
                                 .currency(account.getCurrency())
                                 .transactionDate(tx.getDateTime())

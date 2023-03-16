@@ -1,9 +1,9 @@
 package by.vitstep.organizer.service;
 
+import by.vitstep.organizer.exception.UserNotFoundException;
 import by.vitstep.organizer.model.dto.ContactsDto;
 import by.vitstep.organizer.model.entity.Contacts;
 import by.vitstep.organizer.model.entity.Friend;
-import by.vitstep.organizer.model.entity.User;
 import by.vitstep.organizer.model.mapping.ContactsMapper;
 import by.vitstep.organizer.repository.FriendRepository;
 import by.vitstep.organizer.repository.UserRepository;
@@ -29,7 +29,7 @@ public class ContactService {
                 })
 
                 .map(user -> user.getContacts().getId())
-                .orElse(null);
+                .orElseThrow(()->new UserNotFoundException(userId));
     }
 
     public Contacts createFriendContact(Long friendId, Contacts contacts) {

@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
-public class AbstractAnalyticsResponseDto {
+public abstract class AbstractAnalyticsResponseDto {
     String accountName;
     LocalDateTime dateFrom;
     LocalDateTime dateTo;

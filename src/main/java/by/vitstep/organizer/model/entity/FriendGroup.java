@@ -1,13 +1,10 @@
 package by.vitstep.organizer.model.entity;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
-
+@Builder
 @Entity
 @Data
 @AllArgsConstructor

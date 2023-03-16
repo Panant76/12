@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "project")
 @Component
 public class ProjectConfiguration {
-    private String FormatDate;
-    private String FormatDateTime;
+    private String formatDate;
+    private String formatDateTime;
     private Security security;
     private Business business;
     @Data

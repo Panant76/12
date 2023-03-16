@@ -3,13 +3,12 @@ package by.vitstep.organizer.service.analytics;
 import by.vitstep.organizer.config.ProjectConfiguration;
 import by.vitstep.organizer.exception.AccountNotFoundException;
 import by.vitstep.organizer.exception.BadRequestException;
-import by.vitstep.organizer.model.dto.ArchiveStatsDto;
 import by.vitstep.organizer.model.dto.AllArchiveStatsDto;
+import by.vitstep.organizer.model.dto.ArchiveStatsDto;
 import by.vitstep.organizer.model.dto.SingleArchiveStatsDto;
 import by.vitstep.organizer.model.dto.enums.ArchiveStatsType;
 import by.vitstep.organizer.model.entity.Account;
 import by.vitstep.organizer.model.entity.Archive;
-import by.vitstep.organizer.model.entity.Transaction;
 import by.vitstep.organizer.repository.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -22,63 +21,36 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Collection;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ArchivationService {
-    TransactionRepository transactionRepository;
+
     AccountRepository accountRepository;
     ArchiveRepository archiveRepository;
     ProjectConfiguration projectConfiguration;
-    FriendRepository friendRepository;
-    UserRepository userRepository;
+    AccountArchivationProcessor accountArchivationProcessor;
 
 
     @Async
     @Transactional
     @Scheduled(cron = "${project.business.scheduling.morning-cron}")
-    public void archivate() {
+    public void doArchiv() {
         System.out.println("" + LocalTime.now() + "Процедура архивирования запущена!");
         LocalDateTime before = LocalDateTime.now().minusDays(projectConfiguration.getBusiness().getArchivationPeriodDays());
-        LocalDate from = archiveRepository
+        LocalDateTime dateFrom = archiveRepository
                 .findLast()
                 .map(Archive::getDateTo)
                 .orElse(null);
-        archiveRepository.deleteAll();
-        transactionRepository.deleteAll(
-                accountRepository.findAll()
-                        .stream()
-                        .collect(Collectors.toMap(Function.identity(), account -> transactionRepository.findByAccount(account, before)))
-                        .entrySet()
-                        .stream()
-                        .map(entry -> {
-                            Float spendAmount = entry.getValue()
-                                    .stream()
-                                    .filter(tx -> tx.getSourceAccount() != null)
-                                    .filter(tx -> tx.getSourceAccount().getId().equals(entry.getKey().getId()))
-                                    .map(Transaction::getAmount)
-                                    .reduce(Float::sum)
-                                    .orElse(0F);
-                            Float incomeAmount = entry.getValue()
-                                    .stream()
-                                    .filter(tx -> tx.getTargetAccount().getId().equals(entry.getKey().getId()))
-                                    .map(Transaction::getAmount)
-                                    .reduce(Float::sum)
-                                    .orElse(0F);
-                            archiveRepository.save(Archive.builder()
-                                    .account(entry.getKey())
-                                    .spend(spendAmount)
-                                    .incom(incomeAmount)
-                                    .dateTo(before.toLocalDate())
-                                    .build());
-                            return entry.getValue();
-                        })
-                        .flatMap(Collection::stream)
-                        .collect(Collectors.toList()));
+        Long lastAccId = accountRepository.findCurrentSeq();
+        List<Long> listId = new ArrayList<>();
+        for (long i = 1; i <= lastAccId; i++) {
+            listId.addAll(accountArchivationProcessor.processAccountArchive(i, before, dateFrom));
+        }
+        accountArchivationProcessor.delete(listId);
         System.out.println("" + LocalDateTime.now() + "Процедура архивирования завершена!");
     }
 
@@ -103,17 +75,14 @@ public class ArchivationService {
 //
 //    }
     public ArchiveStatsDto getStats(Long id, ArchiveStatsType type) {
-        if(archiveRepository.findAll().isEmpty()){
-
-        }
         Account account = accountRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id));
         return archiveRepository.findByAccount(account).map(archive -> {
             switch (type) {
                 case ALL:
                     return AllArchiveStatsDto.builder()
                             .accountName(account.getName())//НОМЕР СЧЕТА
-                            .dateFrom(archive.getDateFrom())
-                            .dateTo(archive.getDateTo())
+                            .dateFrom(LocalDate.from(archive.getDateFrom()))
+                            .dateTo(LocalDate.from(archive.getDateTo()))
                             .income(archive.getIncom())
                             .spend(archive.getSpend())
                             .build();
@@ -121,16 +90,16 @@ public class ArchivationService {
                 case INCOME:
                     return SingleArchiveStatsDto.builder()
                             .accountName(account.getName())
-                            .dateFrom(archive.getDateFrom())
-                            .dateTo(archive.getDateTo())
+                            .dateFrom(LocalDate.from(archive.getDateFrom()))
+                            .dateTo(LocalDate.from(archive.getDateTo()))
                             .amount(archive.getIncom())
                             .build();
 
                 case SPEND:
                     return SingleArchiveStatsDto.builder()
                             .accountName(account.getName())
-                            .dateFrom(archive.getDateFrom())
-                            .dateTo(archive.getDateTo())
+                            .dateFrom(LocalDate.from(archive.getDateFrom()))
+                            .dateTo(LocalDate.from(archive.getDateTo()))
                             .amount(archive.getSpend())
                             .build();
 
@@ -147,8 +116,8 @@ public class ArchivationService {
         return archiveRepository.findByAccount(account).map(archive -> {
             ArchiveStatsDto.builder()
                     .accountName(account.getName())//НОМЕР СЧЕТА
-                    .dateFrom(archive.getDateFrom())
-                    .dateTo(archive.getDateTo())
+                    .dateFrom(LocalDate.from(archive.getDateFrom()))
+                    .dateTo(LocalDate.from(archive.getDateTo()))
                     .build();
             switch (type) {
                 case ALL:

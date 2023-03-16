@@ -11,12 +11,12 @@ import by.vitstep.organizer.utils.SecurityUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.security.authentication.AuthenticationServiceException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -28,9 +28,10 @@ public class FriendService {
     @Transactional
     public FriendDto createFriend(FriendDto friendDto) {
         Friend friend = friendMapper.toEntity(friendDto);
+        log.debug("Входящий запрос на создания объекта друга: {}", friendDto);
         Optional<User> userOptional = userRepository.findByPhone(friend.getContacts().getPhone());
         userOptional.ifPresent(user -> friend.setUuid(user.getUuid()));
-        User currentUser = SecurityUtil.getCurrentUser().orElseThrow(() -> new AuthenticationServiceException("Ошибка авторизации"));
+        User currentUser = SecurityUtil.getCurrentUser().orElseThrow(() -> new UserNotFoundException("Ошибка авторизации"));
         friend.setUser(currentUser);
         friendRepository.save(friend);
         return friendMapper.toDto(friend);

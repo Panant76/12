@@ -9,6 +9,7 @@ import by.vitstep.organizer.model.entity.enums.Currency;
 import by.vitstep.organizer.model.mapping.AccountMapper;
 import by.vitstep.organizer.repository.AccountRepository;
 import by.vitstep.organizer.utils.SecurityUtil;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
+@SecurityRequirement(name = "Organizer security")
 public class AccountService {
     AccountRepository accountRepository;
     AccountMapper accountMapper;

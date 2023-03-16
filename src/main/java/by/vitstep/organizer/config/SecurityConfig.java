@@ -19,7 +19,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -47,7 +46,7 @@ public class SecurityConfig {
                 .authenticationEntryPoint(authEntryPoint)
                 .and()
                 .authorizeHttpRequests()
-                .antMatchers("/auth/**", "/test/**").permitAll()
+                .antMatchers("/auth/**", "/test/**", "/swagger-ui/**", "/swagger-ui**", "/api-docs/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)

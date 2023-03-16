@@ -5,6 +5,7 @@ import by.vitstep.organizer.model.entity.Friend;
 import lombok.*;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -13,9 +14,10 @@ import java.util.List;
 public class UserDto {
     Long id;
     String login;
-    String password;
+
     String name;
     Contacts contacts;
+    UUID uuid;
     LocalDate birthday;
     List<Friend> friendList;
 }
